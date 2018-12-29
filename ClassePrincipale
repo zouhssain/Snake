@@ -1,0 +1,463 @@
+package SnakeClasse;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Random;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import flux.Clavier;
+import java.awt.FlowLayout;
+
+public class ClassePrincipale extends JFrame{
+	
+	int larg,nbCaseX,nbCaseY,direction;
+	JPanel panneau ;
+	ArrayList <Point> corps;
+	Timer horloge;
+	int Cx=15;
+	int Cy=15;
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		ClassePrincipale serpent = new ClassePrincipale();
+		serpent.setVisible(true);
+		}
+	
+	public ClassePrincipale()
+	{
+		direction = 1;// 1 = droite - 2 = bas - 3 = gauche - 4 = haut
+		nbCaseX=40;
+		nbCaseY=20;
+		
+		int taillefenetreX=Toolkit.getDefaultToolkit().getScreenSize().width*3/4;
+		int taillefenetreY=Toolkit.getDefaultToolkit().getScreenSize().height*3/4;
+		larg=taillefenetreX/nbCaseX;
+		this.setSize(larg*43,larg*23);
+		this.setLocationRelativeTo(null);
+		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+		this.setTitle("SNAKE MADE BY OUHSSAIN");
+		int taille=1;
+		corps = new ArrayList <Point> ();
+		for(int i = 0 ; i < taille ; i++)
+		{
+			corps.add(new Point(5+i,5));
+		}
+		
+		/*initialX=100;
+		initialY=100;*/
+		
+		
+		
+		panneau = new JPanel(){
+			@Override
+			protected void paintComponent(Graphics g) {
+
+					panneau.setSize(larg*40,larg*20);
+				    panneau.setLocation(larg,larg);
+			
+				
+				// TODO Auto-generated method stub
+				super.paintComponent(g);
+				
+				
+				
+				dessinerGrille(g);
+				/*dessinerMotif(0,0,1,g); // 1 rouge , 2 = bleu , 3 = jaune , 4 = vert
+				dessinerMotif(1,1,2,g);
+				dessinerMotif(2,2,3,g);
+				dessinerMotif(3,3,4,g);*/
+				//dessinerMotif(corps.get(0).x,corps.get(0).y,4,g);
+				dessinerSnake(5,corps.get(0).x,corps.get(0).y,2,g);
+				repas(g);
+				//TailleSerpent();
+				//Corps(g);
+				/////////////////////////OBSTACLE////////////////////////
+				if(corps.size()>=10)
+				{
+					for(int i=0; i<(0.25*nbCaseX);i++)
+					{
+						dessinerMotif(i, 0, 5, g);
+						dessinerMotif(nbCaseX-1-i, 0, 5, g);
+						dessinerMotif(i, nbCaseY-1, 5, g);
+						dessinerMotif(nbCaseX-1-i, nbCaseY-1, 5, g);
+					}
+				for(int i=0; i<(0.25*nbCaseY);i++)
+					{
+						dessinerMotif(0, i, 5, g);
+						dessinerMotif(0, nbCaseY-1-i, 5, g);
+						dessinerMotif(nbCaseX-1, i, 5, g);
+						dessinerMotif(nbCaseX-1, nbCaseY-1-i, 5, g);	
+					}
+				}
+				
+				if(corps.size()>=20)
+				{
+					for(int i =0 ; i<nbCaseX*0.5;i++)
+					{
+						dessinerMotif(3*nbCaseX/4-i-1, 6, 5, g);
+						dessinerMotif(3*nbCaseX/4-i-1, 13, 5, g);
+					}
+				}
+				
+				
+				
+				//////////////////////////quand on touche l'obstacle game over
+				boolean flag=false;
+				if(corps.size()>=10)
+				{
+					for(int i=0; i<(0.25*nbCaseX);i++)
+					{
+						if(    (corps.get(0).x== i && corps.get(0).y == 0) 
+							|| (corps.get(0).x== i && corps.get(0).y == nbCaseY-1) 
+							|| (corps.get(0).x== nbCaseX-1-i && corps.get(0).y == nbCaseY-1) 
+							|| (corps.get(0).x== nbCaseX-1-i && corps.get(0).y == 0) )
+						{flag=true;}
+					}
+					
+					for(int i=0; i<(0.25*nbCaseY);i++)
+					{
+						if( (corps.get(0).x== 0 && corps.get(0).y == i) 
+								|| (corps.get(0).x== 0 && corps.get(0).y == nbCaseY-1-i)
+								|| (corps.get(0).x== nbCaseX-1 && corps.get(0).y == i)
+								|| (corps.get(0).x== nbCaseX-1 && corps.get(0).y == nbCaseY-1-i) )
+						{flag=true;}
+						
+					}
+				}
+				
+				
+				
+				if(corps.size()>=20)
+				{
+					for(int i =0 ; i<nbCaseX*0.5;i++)
+				{
+					if((corps.get(0).x== 3*nbCaseX/4-i-1 && corps.get(0).y == 6 )
+							|| (corps.get(0).x== 3*nbCaseX/4-i-1 && corps.get(0).y == 13))
+							{flag=true;}
+				}
+				}
+				
+				
+				
+				for(int i=1;i<corps.size();i++)
+				{
+					if(corps.get(0).x==corps.get(i).x && corps.get(0).y==corps.get(i).y) flag=true;
+				}
+				
+					if(flag==true)
+					{
+						g.setColor(Color.GRAY);
+						g.fillRect(0, 0, Toolkit.getDefaultToolkit().getScreenSize().width*3/4, Toolkit.getDefaultToolkit().getScreenSize().height*3/4);
+						
+						g.setColor(new Color(133,6,6));
+						g.setFont(new Font("Arial", Font.BOLD, 30));
+						g.drawString("SNAKE", Toolkit.getDefaultToolkit().getScreenSize().width*3/10+25, Toolkit.getDefaultToolkit().getScreenSize().width*3/16-120);
+						
+						
+						g.setColor(new Color(133,6,6));
+						g.setFont(new Font("Arial", Font.BOLD, 30));
+						g.drawString("Developed by OUHSSAIN-OZD", Toolkit.getDefaultToolkit().getScreenSize().width*2/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16-90);
+						
+						g.setColor(new Color(133,6,6));
+						g.setFont(new Font("Arial", Font.BOLD, 30));
+						g.drawString("All right reserved ©", Toolkit.getDefaultToolkit().getScreenSize().width*2/10+60, Toolkit.getDefaultToolkit().getScreenSize().width*3/16-60);
+						
+						
+						g.setColor(Color.RED);
+						g.setFont(new Font("Arial", Font.BOLD, 25));
+						g.drawString("GAME OVER", Toolkit.getDefaultToolkit().getScreenSize().width*3/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16);
+						g.setColor(Color.RED);
+						g.setFont(new Font("Arial", Font.BOLD, 25));
+						g.drawString("SCORE : "+corps.size()*10, Toolkit.getDefaultToolkit().getScreenSize().width*3/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16+30);
+						horloge.stop();
+						
+						
+						JButton Rejouer=new JButton("Rejouer");
+						Rejouer.setBounds(Toolkit.getDefaultToolkit().getScreenSize().width*3/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16+60, 150, 50);
+						Rejouer.setBackground(Color.white);
+						this.add(Rejouer);
+						Rejouer.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent arg0) {
+								/*menuEntree m=new menuEntree();
+								m.setVisible(true);*/
+								ClassePrincipale s=new ClassePrincipale();
+								s.setVisible(true);
+							}
+						});
+						
+						
+						
+						/////
+
+						JButton Quitter=new JButton("Quitter");
+						Quitter.setBounds(Toolkit.getDefaultToolkit().getScreenSize().width*3/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16+110, 150, 50);
+						Quitter.setBackground(Color.white);
+						this.add(Quitter);
+						Quitter.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent arg0) {
+								System.exit(0);
+							}
+						});
+						/////
+						JButton Save=new JButton("Enregistrer");
+						Save.setBounds(Toolkit.getDefaultToolkit().getScreenSize().width*3/10, Toolkit.getDefaultToolkit().getScreenSize().width*3/16+160, 150, 50);
+						Save.setBackground(Color.white);
+						this.add(Save);
+						Save.addActionListener(new ActionListener() {
+							
+							@Override
+							public void actionPerformed(ActionEvent arg0) {
+								System.exit(0);
+							}
+						});
+					//////////
+						
+					}
+						
+						
+						//javax.swing.JOptionPane.showMessageDialog(null,"Press O si vous voulez quitter"); 
+						//System.out.println("Press O si vous voulez quitter");
+						/*String choix;
+						choix = Clavier.lireString();
+						if(choix == "O"||choix == "o")
+						{
+							System.out.println("jeu termine");
+							System.exit(0);
+						}
+						else {
+							horloge.start();
+						}*/
+						
+			
+				
+				/////////////////////////////////////////////				
+		}};
+		FlowLayout flowLayout = (FlowLayout) panneau.getLayout();
+		panneau.setBackground(new Color(216, 191, 216));
+		this.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// TODO Auto-generated method stub
+				super.keyPressed(e);
+				if(e.getKeyCode()==KeyEvent.VK_RIGHT && direction !=3) direction = 1;
+				if(e.getKeyCode()==KeyEvent.VK_LEFT && direction !=1) direction = 3;
+				if(e.getKeyCode()==KeyEvent.VK_UP && direction !=2) direction = 4;
+				if(e.getKeyCode()==KeyEvent.VK_DOWN && direction !=4) direction = 2;
+			}
+		});
+		
+		this.setContentPane(panneau);
+		
+		int speedsnake=200;		
+		horloge = new Timer(speedsnake, new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				//System.out.println(""+horloge.getDelay());
+				horloge.setDelay(speedsnake-5*corps.size());
+				deplacerSnake();
+				panneau.repaint();
+			}});
+		horloge.start();
+		
+	}
+	
+	void deplacerSnake()
+	{
+		if(direction == 1 ) {for(int i = corps.size()-1;i>0;i--)	{corps.get(i).x = corps.get(i-1).x; corps.get(i).y = corps.get(i-1).y;	} corps.get(0).x+=1;};		
+		if(direction == 2 ) {for(int i = corps.size()-1;i>0;i--)	{corps.get(i).y = corps.get(i-1).y;	corps.get(i).x = corps.get(i-1).x;} corps.get(0).y+=1;};
+		if(direction == 3 ) {for(int i = corps.size()-1;i>0;i--)	{corps.get(i).x = corps.get(i-1).x;	corps.get(i).y = corps.get(i-1).y;} corps.get(0).x-=1;};
+		if(direction == 4 ) {for(int i = corps.size()-1;i>0;i--)	{corps.get(i).y = corps.get(i-1).y;	corps.get(i).x = corps.get(i-1).x;} corps.get(0).y-=1;};
+		
+		if(corps.get(0).x > nbCaseX-1) corps.get(0).x=0;
+		if(corps.get(0).x < 0) corps.get(0).x= nbCaseX-1;
+		
+		if(corps.get(0).y > nbCaseY-1) corps.get(0).y=0;
+		if(corps.get(0).y < 0) corps.get(0).y= nbCaseY-1;
+	}
+	
+	////////////////////////////////////////////
+	void repas(Graphics g)
+	{
+		Random rand = new Random();
+		g.fillRect(getX()*larg, getY()*larg, larg, larg);
+		boolean flag=false;
+		
+		for(int i=0; i<(0.25*nbCaseX);i++)
+		{
+			if((Cx == i && Cy == 0)||(Cx == nbCaseX-1-i && Cy == 0)||(Cx == i && Cy == nbCaseY-1)||(Cx == nbCaseX-1-i && Cy == nbCaseY-1))
+			{
+				flag=true;
+			}
+		}
+		for(int i=1;i<corps.size();i++)
+		{
+			if(corps.get(0).x==corps.get(i).x && corps.get(0).y==corps.get(i).y) flag=true;
+		}
+		for(int i=0; i<(0.25*nbCaseY);i++)
+		{
+			if((Cx == 0 && Cy == i)||(Cx == 0 && Cy == nbCaseY-1-i)||(Cx == nbCaseX-1 && Cy == i)||(Cx == nbCaseX-1 && Cy == nbCaseY-1-i))
+			{
+				flag=true;
+			}	
+		}
+		
+		for(int i =0 ; i<nbCaseX*0.5;i++)
+		{
+			if((Cx == 3*nbCaseX/4-i-1 && Cy == 6)||(Cx == 3*nbCaseX/4-i-1 && Cy == 13))
+			{
+				flag=true;
+			}
+		}
+		if(Cx == corps.get(0).x && Cy == corps.get(0).y)
+		{
+			flag=true;
+		}
+		
+		
+		
+		if(flag==true)
+		{
+			//while((Cx == corps.get(0).x && Cy == corps.get(0).y))
+			//{
+				Cx = rand.nextInt(40);
+				Cy = rand.nextInt(20);
+			//}
+		}
+		dessinerMotif(Cx,Cy,4,g);
+	}
+	
+	
+	
+	public void TailleSerpent()
+	{
+		int taille = 1;
+		if(Cx == corps.get(0).x && Cy == corps.get(0).y){
+			taille++;
+			for(int i = 0 ; i < taille ; i++)
+			{
+				corps.add(new Point(5+i,5));			
+			}
+		}
+		
+	}
+	
+	/*void Corps(Graphics g)
+	{
+		ArrayList<Graphics> corps = new ArrayList<>();
+		Point P=new Point(Cx, Cx);
+		//P = new[] Point();
+		for(int i=0;i<corps.size();i++)
+		{
+			if(Cx == corps.get(0).x && Cy == corps.get(0).y){				
+				//g.fillOval(P[i].x, P[i].y, larg, larg);
+				dessinerMotif(P.x,P.y,4,g);
+				//corps[i].add(P[i]);
+			}
+		}
+		
+	}*/
+	
+	////////////////////////////////////////////
+	
+		void dessinerGrille(Graphics g)
+		{
+			g.setColor(Color.CYAN);
+			for(int i =0 ; i <= nbCaseX ; i++)
+				g.drawLine(i*larg,0,i*larg, larg*nbCaseY);
+			for(int i =0 ; i <= nbCaseY ; i++)
+				g.drawLine(0,i*larg, larg*nbCaseX,i*larg);
+		}
+		
+		
+	
+	public void dessinerMotif(int x,int y , int c , Graphics g)
+	{
+		if(c==1) g.setColor(Color.red);
+		if(c==2) g.setColor(Color.blue);
+		if(c==3) g.setColor(Color.yellow);
+		if(c==4) g.setColor(Color.green);
+		if(c==5) g.setColor(Color.gray);
+		if(c==6) g.setColor(Color.black);
+		if(c==7) g.setColor(Color.LIGHT_GRAY);
+		
+		g.fillRect(x*larg, y*larg, larg, larg);
+	}
+
+	public void dessinertete(int x,int y , int c , Graphics g)
+	{
+		if(c==1) g.setColor(Color.red);
+		if(c==2) g.setColor(Color.blue);
+		if(c==3) g.setColor(Color.yellow);
+		if(c==4) g.setColor(Color.green);
+		if(c==5) g.setColor(Color.gray);
+		if(c==6) g.setColor(Color.black);
+		if(c==7) g.setColor(Color.LIGHT_GRAY);
+		
+		g.fillOval(x*larg, y*larg, larg, larg);
+	}
+	
+	public void dessinerSnake(int n,int x,int y , int c , Graphics g)
+	{
+		dessinertete(corps.get(0).x,corps.get(0).y, 1 , g);
+		for(int i=1;i<corps.size();i++)
+		{
+			dessinerMotif(corps.get(i).x,corps.get(i).y, 2 , g);
+		}
+		
+		
+		int taille = 1;
+		if(Cx == corps.get(0).x && Cy == corps.get(0).y){
+			taille++;
+			for(int i = 0 ; i < taille ; i++)
+			{
+				corps.add(new Point(5+i,5));			
+			}
+		}
+	}
+	
+
+	public JPanel getPanneau() {
+		return panneau;
+	}
+}
+
+class Point
+{
+	int x,y;
+	
+	////////////////////////////
+	public void SetX(int x){this.x=x;}
+	public void SetY(int y){this.y=y;}
+	public int getX(){return this.x;}
+	public int getY(){return this.y;}
+	//////////////////////////////
+	
+	
+	
+	
+	
+	public Point(int x, int y) {
+		super();
+		this.x = x;
+		this.y = y;
+	}
+}
